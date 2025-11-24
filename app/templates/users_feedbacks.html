@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% set showform = false %}
+{% set showfooter = false %}
+
+{% block title %}
+    Отзывы пользователей
+{% endblock %}
+
+{% block head_styles %}
+{{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/users_feedbacks.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>Отзывы пользователей</h1>
+
+        <!-- Alert container for server-side messages -->
+        <div id="alert-container"></div>
+
+        <!-- Feedback statistics -->
+        {% if feedbacks %}
+        <div class="mb-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <small class="text-muted">
+                        Всего отзывов: <strong>{{ feedbacks|length }}</strong>
+                    </small>
+                </div>
+                <div class="col-md-6 text-md-right">
+                    <small class="text-muted">
+                        Отвечено: <strong>{{ feedbacks|selectattr('response')|list|length }}</strong> /
+                        Ожидает ответа: <strong>{{ feedbacks|rejectattr('response')|list|length }}</strong>
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Feedback table -->
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width: 15%;">Имя пользователя</th>
+                        <th scope="col" style="width: 40%;">Отзыв</th>
+                        <th scope="col" style="width: 30%;">Ответ</th>
+                        <th scope="col" style="width: 15%;">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for feedback in feedbacks %}
+                    <tr id="feedback-row-{{ feedback.feedback_id }}">
+                        <td>
+                            <strong>{{ feedback.username|e }}</strong>
+                            {% if feedback.created_at %}
+                            <br>
+                            <small class="text-muted">
+                                {{ feedback.created_at.strftime('%d.%m.%Y %H:%M') if feedback.created_at else '' }}
+                            </small>
+                            {% endif %}
+                        </td>
+                        <td class="feedback-message"
+                            data-tooltip="{{ feedback.message|e }}"
+                            title="Нажмите для просмотра полного текста">
+                            {{ feedback.message|e }}
+                        </td>
+                        <td id="response-cell-{{ feedback.feedback_id }}">
+                            {% if feedback.response %}
+                                {{ feedback.response|e }}
+                            {% else %}
+                                <span class="text-muted font-italic">Ответ пока не дан</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not feedback.response %}
+                                <button id="response-btn-{{ feedback.feedback_id }}"
+                                        class="btn btn-primary btn-sm response-btn"
+                                        data-feedback-id="{{ feedback.feedback_id }}"
+                                        data-response=""
+                                        title="Ответить на отзыв"
+                                        aria-label="Ответить на отзыв от {{ feedback.username|e }}">
+                                    <i class="fas fa-reply" aria-hidden="true"></i>
+                                    Ответить
+                                </button>
+                            {% else %}
+                                <button id="edit-btn-{{ feedback.feedback_id }}"
+                                        class="btn btn-secondary btn-sm edit-btn"
+                                        data-feedback-id="{{ feedback.feedback_id }}"
+                                        data-response="{{ feedback.response|e }}"
+                                        title="Редактировать ответ"
+                                        aria-label="Редактировать ответ для {{ feedback.username|e }}">
+                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                    Редактировать
+                                </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="fas fa-comments fa-3x mb-3" aria-hidden="true"></i>
+                                <h5>Отзывы отсутствуют</h5>
+                                <p>Пока что пользователи не оставили ни одного отзыва.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Response Modal (Bootstrap 4) -->
+    <div class="modal fade" id="responseModal" tabindex="-1" role="dialog" aria-labelledby="responseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="responseModalLabel">
+                        <i class="fas fa-reply mr-2" aria-hidden="true"></i>
+                        Ответ на отзыв
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="response-form" novalidate>
+                        <input type="hidden" id="feedback-id" name="feedback_id">
+
+                        <!-- Feedback preview (will be populated by JS) -->
+                        <div id="feedback-preview" class="mb-3" style="display: none;">
+                            <label class="form-label font-weight-bold">Отзыв пользователя:</label>
+                            <div class="border rounded p-3 bg-light">
+                                <div id="feedback-preview-content" class="text-muted"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="response-text" class="form-label font-weight-bold">
+                                Ваш ответ: <span class="text-danger">*</span>
+                            </label>
+                            <textarea id="response-text"
+                                      name="response"
+                                      class="form-control"
+                                      rows="5"
+                                      placeholder="Введите ваш ответ на отзыв пользователя..."
+                                      maxlength="1000"
+                                      required
+                                      aria-describedby="response-help response-counter"></textarea>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <small id="response-help" class="form-text text-muted">
+                                    Напишите вежливый и конструктивный ответ
+                                </small>
+                                <small id="response-counter" class="text-muted">
+                                    <span id="char-count">0</span>/1000
+                                </small>
+                            </div>
+                            <div class="invalid-feedback">
+                                Пожалуйста, введите ответ
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit"
+                            form="response-form"
+                            class="btn btn-primary"
+                            id="submit-response">
+                        <i class="fas fa-paper-plane mr-1" aria-hidden="true"></i>
+                        Отправить ответ
+                    </button>
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-dismiss="modal">
+                        <i class="fas fa-times mr-1" aria-hidden="true"></i>
+                        Отмена
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+    <!-- Custom feedback management script -->
+    <script src="{{ url_for('static', filename='js/users_feedbacks.js') }}"></script>
+{% endblock %}

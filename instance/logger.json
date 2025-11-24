@@ -1,0 +1,32 @@
+{
+    "version": 1,
+    "formatters": {
+        "base": {
+            "format": "%(asctime)s - %(levelname)s - %(name)s - %(module)s - %(funcName)s:%(lineno)d - %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "style": "%",
+            "validate": false
+        }
+    },
+    "handlers": {
+        "file_handler": {
+            "class": "logging.FileHandler",
+            "level": "INFO",
+            "formatter": "base",
+            "filename": "app/logs/app.log"
+        }
+    },
+    "loggers": {
+        "app": {
+            "level": "INFO",
+            "handlers": ["file_handler"],
+            "propagate": false
+        }
+    },
+    "root": {
+        "level": "INFO",
+        "handlers": ["file_handler"]
+    },
+    "disable_existing_loggers": false,
+    "incremental": false
+}

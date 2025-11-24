@@ -1,0 +1,227 @@
+/* Feedback Form Specific Styles */
+/* Note: Base variables and global styles are inherited from base.css */
+
+/* Floating Feedback Button */
+.feedback-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--standard-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.feedback-button:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    box-shadow: var(--hover-shadow);
+    transform: translateY(-2px) scale(1.05);
+}
+
+.feedback-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(255, 211, 55, 0.25), var(--hover-shadow);
+}
+
+.feedback-button:active {
+    transform: translateY(-2px) scale(0.98);
+}
+
+.feedback-button.active {
+    background-color: var(--error-color);
+    border-color: var(--error-color);
+    color: white;
+    transform: rotate(45deg) translateY(-2px);
+}
+
+.feedback-button.active:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+}
+
+/* Feedback Form Container */
+.feedback-form-container {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 350px;
+    background-color: var(--background-light);
+    border-radius: 12px;
+    box-shadow: var(--hover-shadow);
+    transform: translateY(20px) scale(0.9);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 999;
+    overflow: hidden;
+    border: 2px solid var(--primary-color);
+}
+
+.feedback-form-container.show {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Feedback Form Header */
+.feedback-form-header {
+    background-color: var(--primary-color);
+    padding: 1rem 1.25rem;
+    border-radius: 10px 10px 0 0;
+}
+
+.feedback-form-header h3 {
+    margin: 0;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Feedback Form Body */
+.feedback-form-body {
+    padding: 1.25rem;
+}
+
+/* Override form controls for compact feedback form */
+.feedback-form-body .form-group {
+    margin-bottom: 1rem;
+}
+
+.feedback-form-body .form-group label {
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+}
+
+.feedback-form-body .form-control {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.9rem;
+    border-radius: 6px;
+}
+
+.feedback-form-body textarea.form-control {
+    min-height: 80px;
+    resize: vertical;
+}
+
+/* Feedback Form Button */
+.feedback-form-body .btn-primary {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.feedback-form-body .btn-primary:disabled {
+    background-color: #ccc;
+    border-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Success Message */
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--success-color);
+    display: none;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    text-align: center;
+    font-weight: 500;
+}
+
+.success-message.show {
+    display: block;
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Demo Content (if needed) */
+.demo-content {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--background-light);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: var(--standard-shadow);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .feedback-form-container {
+        width: calc(100vw - 40px);
+        right: 20px;
+        bottom: 90px;
+        max-width: 350px;
+    }
+
+    .feedback-button {
+        width: 55px;
+        height: 55px;
+        font-size: 20px;
+        bottom: 15px;
+        right: 15px;
+    }
+
+    .feedback-form-container {
+        bottom: 80px;
+        right: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .feedback-form-container {
+        width: calc(100vw - 30px);
+        right: 15px;
+    }
+
+    .feedback-form-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .feedback-form-header h3 {
+        font-size: 1rem;
+    }
+
+    .feedback-form-body {
+        padding: 1rem;
+    }
+}
+
+/* Animation Improvements */
+@media (prefers-reduced-motion: no-preference) {
+    .feedback-button:hover {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .feedback-form-container {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+}

@@ -1,0 +1,796 @@
+{% extends "base.html" %}
+{% set showform = false %}
+{% set showfooter = false %}
+
+{% block title %}
+    Журнал Оповещения
+{% endblock %}
+
+{% block head_styles %}
+{{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/crq_sbs/calendar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/crq_sbs/modal_forms.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/crq_sbs/lock.css') }}">
+{% endblock %}
+
+{% block content %}
+
+    <!-- Форма контента календаря -->
+    <div class="container">
+        <div class="calendar-container" id="calendarContainer">
+            <h2 class="service-title-label" id="serviceTitle"></h2>
+            <div class="tabs">
+                <button class="tab-button" data-service="td">ТД</button>
+                <button class="tab-button" data-service="dit">ДИТ</button>
+            </div>
+            <div class="filter-container">
+                <div class="form-row filter-container-row">
+                    <div class="form-group col-md-6 filter-actions">
+                        <div class="filter-buttons">
+                            <button class="filter-button" data-filter="two_weeks">Последние 2 недели</button>
+                            <button class="filter-button" data-filter="two_days">Последние 2 дня</button>
+                            <button class="filter-button" data-filter="one_day">Последний день</button>
+                        </div>
+                        <div class="date-range-filter">
+                            <label for="filterStartDate">С:</label>
+                            <input type="date" class="date-input crq-start-date-input" id="filterStartDate">
+                            <label for="filterEndDate">По:</label>
+                            <input type="date" class="date-input crq-end-date-input" id="filterEndDate">
+                            <button class="filter-button date-range-button">Фильтровать по диапазону</button>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6 form-actions">
+                        <div class="action-buttons">
+                            <button type="button" class="action-button partner-button">Рассылка по партнерам</button>
+                            <button type="button" class="action-button add-crq-button">Добавить CRQ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="status-legend">
+                <div class="legend-item">
+                    <div class="status-indicator crq-status-new">
+                        <span class="status-text">Новые</span>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="status-indicator crq-status-created">
+                        <span class="status-text">Работы заведены</span>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="status-indicator crq-status-rescheduled">
+                        <span class="status-text">Работы перенесены</span>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="status-indicator crq-status-cancelled">
+                        <span class="status-text">Работы отменены</span>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="status-indicator crq-status-questioned">
+                        <span class="status-text">Под вопросом</span>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="status-indicator crq-status-no-impact">
+                        <span class="status-text">Пл. работы без влияния</span>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="status-indicator crq-status-unsuccessful">
+                        <span class="status-text">Работы неуспешны</span>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="status-indicator crq-status-mfs">
+                        <span class="status-text">Работы по MFS</span>
+                    </div>
+                </div>
+            </div>
+            <table class="calendar-table" id="calendarTable">
+                <thead>
+                    <tr>
+                        <th class="date-column">Дата</th>
+                        <th class="day-column">День недели</th>
+                        <th class="work-column">Работы</th>
+                    </tr>
+                </thead>
+                <tbody id="calendarBody">
+                    <!-- Контент календаря рендерится тут -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Обновленное модальное окно CRQ создания CRQ-->
+    <div class="modal fade" id="newCrqModal" tabindex="-1" role="dialog" aria-labelledby="newCrqModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <span>Форма поиска и добавления CRQ</span>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="newCrqForm" enctype="multipart/form-data" novalidate>
+                        <!-- Tab Navigation with unique naming -->
+                        <div class="tabs" data-tab-container="newCrq">
+                            <button class="tab active" 
+                                    id="newCrqOverviewTab" 
+                                    data-new-crq-tab="overview" 
+                                    type="button" 
+                                    aria-controls="newCrqOverviewContent">
+                                Общая информация
+                            </button>
+                            <button class="tab" 
+                                    id="newCrqImpactTab" 
+                                    data-new-crq-tab="impact" 
+                                    type="button"
+                                    aria-controls="newCrqImpactContent">
+                                Влияние и таймлайн
+                            </button>
+                            <button class="tab" 
+                                    id="newCrqCommunicationTab" 
+                                    data-new-crq-tab="communication" 
+                                    type="button"
+                                    aria-controls="newCrqCommunicationContent">
+                                Вложения и комментарий
+                            </button>
+                        </div>
+
+                        <!-- Tab 1: Overview -->
+                        <div id="newCrqOverviewContent" class="tab-content active" role="tabpanel">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="newCrqNumber">
+                                        Номер CRQ <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text" 
+                                            class="form-control new-crq-number" 
+                                            id="newCrqNumber" 
+                                            name="new_crq_number" 
+                                            placeholder="Введите номер CRQ (например: CRQ123456)"
+                                            required
+                                            autocomplete="off">
+                                        <div class="input-group-append">
+                                            <button type="button" 
+                                                    class="btn btn-outline-success" 
+                                                    id="findCrq"
+                                                    title="Найти и загрузить данные CRQ">
+                                                <i class="fas fa-search"></i> Поиск
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="newCrqStatus">
+                                        Статус работ <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-control" 
+                                            id="newCrqStatus" 
+                                            name="new_crq_status"
+                                            required>
+                                        <option value="Новое">Новые</option>
+                                        <option value="Под вопросом есть взаимовлияние">Под вопросом есть взаимовлияние</option>
+                                        <option value="Пл. работы Без влияния">Пл. работы Без влияния</option>
+                                        <option value="Работы неуспешны">Работы неуспешны</option>
+                                        <option value="Работы по MFS">Работы по MFS</option>
+                                        <option value="Работы заведены">Работы заведены</option>
+                                        <option value="Работы перенесены">Работы перенесены</option>
+                                        <option value="Работы отменены">Работы отменены</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="newCrqInitiator">
+                                        Инициатор <span class="text">*</span>
+                                    </label>
+                                    <input type="text" 
+                                        class="form-control" 
+                                        id="newCrqInitiator" 
+                                        name="new_crq_initiator_name" 
+                                        placeholder="Автоматически заполнится при поиске"
+                                        readonly>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="newCrqDirection">
+                                        Дирекция <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-control" 
+                                            id="newCrqDirection" 
+                                            name="new_crq_direction"
+                                            required>
+                                        <option value="">Выберите дирекцию</option>
+                                        <option value="ТД">ТД</option>
+                                        <option value="ДИТ">ДИТ</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="newCrqImpact">
+                                        Влияние на абонентов <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-control" 
+                                            id="newCrqImpact" 
+                                            name="new_crq_impact"
+                                            required>
+                                        <option value="">Выберите тип влияния</option>
+                                        <option value="Да">Да</option>
+                                        <option value="Нет">Нет</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label class="form-label" for="newCrqShortDescription">
+                                        Краткое описание <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control" 
+                                            id="newCrqShortDescription" 
+                                            name="new_crq_short_description" 
+                                            rows="2"
+                                            placeholder="Введите краткое описание плановых работ"
+                                            required></textarea>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label class="form-label" for="newCrqDetailedDescription">
+                                        Детальное описание <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control" 
+                                            id="newCrqDetailedDescription" 
+                                            name="new_crq_detailed_description" 
+                                            rows="3"
+                                            placeholder="Введите детальное описание плановых работ"
+                                            required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: Impact and Timeline -->
+                        <div id="newCrqImpactContent" class="tab-content" role="tabpanel">
+                            <div class="impact-section">
+                                <div class="impact-title">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Детали влияния
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="newCrqImpactDetails">
+                                        Влияние на сервис <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control" 
+                                            id="newCrqImpactDetails" 
+                                            name="new_crq_impact_details" 
+                                            rows="3"
+                                            placeholder="Опишите влияние на сервис и пользователей"
+                                            required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="newCrqCause">
+                                        Причина внесения изменений <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control" 
+                                            id="newCrqCause" 
+                                            name="new_crq_cause" 
+                                            rows="3"
+                                            placeholder="Укажите причину внесения изменений"
+                                            required></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="newCrqStartDate">
+                                        Дата начала влияния <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="datetime-local" 
+                                        class="form-control" 
+                                        id="newCrqStartDate" 
+                                        name="new_crq_start_date"
+                                        required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="newCrqEndDate">
+                                        Дата завершения влияния <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="datetime-local" 
+                                        class="form-control" 
+                                        id="newCrqEndDate" 
+                                        name="new_crq_end_date"
+                                        required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="newCrqWorkType">
+                                        Тип работ <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-control" 
+                                            id="newCrqWorkType" 
+                                            name="new_crq_work_type"
+                                            required>
+                                        <option value="">Выберите тип работ</option>
+                                        <option value="Плановые работы">Плановые работы</option>
+                                        <option value="Планово-профилактические работы">Планово-профилактические работы</option>
+                                        <option value="Аварийно-восстановительные работы">Аварийно-восстановительные работы</option>
+                                        <option value="Ремонтно-восстановительные работы">Ремонтно-восстановительные работы</option>
+                                        <option value="Срочные работы">Срочные работы</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="newCrqDropdownMenuButton">
+                                        Тип рассылки <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="dropdown">
+                                        <button class="btn btn-secondary dropdown-toggle" 
+                                                type="button" 
+                                                id="newCrqDropdownMenuButton"
+                                                aria-expanded="false">
+                                            Выберите тип рассылки
+                                        </button>
+                                        <div class="dropdown-menu" id="newCrqSubscriptionsDropdown">
+                                            <!-- Список подписок загружается динамически -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 3: Communication -->
+                        <div id="newCrqCommunicationContent" class="tab-content" role="tabpanel">
+                            <div class="comments-section">
+                                <div class="section-title">
+                                    <i class="fas fa-comment"></i> Комментарий
+                                </div>
+                                <div class="form-group">
+                                    <textarea class="form-textarea" 
+                                            id="newComment" 
+                                            name="new_crq_comment"
+                                            rows="4"
+                                            placeholder="Добавьте комментарий к плановым работам при необходимости"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="attachments-section">
+                                <div class="section-title">
+                                    <i class="fas fa-paperclip"></i> Вложения
+                                </div>
+                                
+                                <div class="form-group">
+                                    <input type="file" 
+                                        id="newCrqFileInput" 
+                                        name="new_crq_file_input" 
+                                        style="display: none;" 
+                                        multiple
+                                        accept=".pdf,.doc,.docx,.xls,.xlsx,.txt">
+                                    
+                                    <button type="button" 
+                                            id="addNewCrqFilesButton" 
+                                            class="btn btn-outline-primary">
+                                        <i class="fas fa-upload"></i> Добавить файлы
+                                    </button>
+                                    
+                                    <small class="form-text text-muted">
+                                        Поддерживаемые форматы: PDF, DOC, DOCX, XLS, XLSX, TXT. Максимальный размер: 10MB
+                                    </small>
+                                </div>
+                                
+                                <ul id="newCrqFileList" class="file-list">
+                                    <!-- Список загруженных файлов -->
+                                </ul>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="addCrq">
+                        <i class="fas fa-save"></i> Сохранить
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Обновленное модальное окно CRQ календаря -->
+    <div class="modal fade" id="editCrqModal" tabindex="-1" role="dialog" aria-labelledby="editCrqModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <span>Форма редактирования CRQ и отправки оповещения</span>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="editCrqForm" enctype="multipart/form-data" novalidate>
+                        <!-- Tab Navigation with unique naming -->
+                        <div class="tabs" data-tab-container="editCrq">
+                            <button class="tab active"
+                                    id="editCrqOverviewTab"
+                                    data-edit-crq-tab="overview"
+                                    type="button"
+                                    aria-controls="editCrqOverviewContent">
+                                Общая информация
+                            </button>
+                            <button class="tab"
+                                    id="editCrqImpactTab"
+                                    data-edit-crq-tab="impact"
+                                    type="button"
+                                    aria-controls="editCrqImpactContent">
+                                Влияние и таймлайн
+                            </button>
+                            <button class="tab"
+                                    id="editCrqCommunicationTab"
+                                    data-edit-crq-tab="communication"
+                                    type="button"
+                                    aria-controls="editCrqCommunicationContent">
+                                Вложения и комментарий
+                            </button>
+                        </div>
+
+                        <!-- Tab 1: Overview -->
+                        <div id="editCrqOverviewContent" class="tab-content active" role="tabpanel">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="editCrqNumber">
+                                        <a href="#" id="crqLink" target="_blank" title="Открыть форму CRQ в ITSM">
+                                            Детали CRQ:
+                                        </a>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text"
+                                            class="form-control edit-crq-number"
+                                            id="editCrqNumber"
+                                            name="edit_crq_number"
+                                            readonly>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="editCrqStatus">
+                                        Статус работ <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-control"
+                                            id="editCrqStatus"
+                                            name="edit_crq_status"
+                                            required>
+                                        <option value="Новое">Новые</option>
+                                        <option value="Под вопросом есть взаимовлияние">Под вопросом есть взаимовлияние</option>
+                                        <option value="Пл. работы Без влияния">Пл. работы Без влияния</option>
+                                        <option value="Работы неуспешны">Работы неуспешны</option>
+                                        <option value="Работы по MFS">Работы по MFS</option>
+                                        <option value="Работы заведены">Работы заведены</option>
+                                        <option value="Работы перенесены">Работы перенесены</option>
+                                        <option value="Работы отменены">Работы отменены</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="editCrqInitiator">
+                                        Инициатор <span class="text">*</span>
+                                    </label>
+                                    <input type="text"
+                                        class="form-control"
+                                        id="editCrqInitiator"
+                                        name="edit_crq_initiator_name"
+                                        readonly>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="editCrqDirection">
+                                        Дирекция <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-control"
+                                            id="editCrqDirection"
+                                            name="edit_crq_direction"
+                                            required>
+                                        <option value="">Выберите дирекцию</option>
+                                        <option value="ТД">ТД</option>
+                                        <option value="ДИТ">ДИТ</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="editCrqImpact">
+                                        Влияние на абонентов <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-control"
+                                            id="editCrqImpact"
+                                            name="edit_crq_impact"
+                                            required>
+                                        <option value="">Выберите тип влияния</option>
+                                        <option value="Да">Да</option>
+                                        <option value="Нет">Нет</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label class="form-label" for="editCrqShortDescription">
+                                        Краткое описание <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control"
+                                            id="editCrqShortDescription"
+                                            name="edit_crq_short_description"
+                                            rows="2"
+                                            placeholder="Введите краткое описание плановых работ"
+                                            required></textarea>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label class="form-label" for="editCrqDetailedDescription">
+                                        Детальное описание <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control"
+                                            id="editCrqDetailedDescription"
+                                            name="edit_crq_detailed_description"
+                                            rows="3"
+                                            placeholder="Введите детальное описание плановых работ"
+                                            required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: Impact and Timeline -->
+                        <div id="editCrqImpactContent" class="tab-content" role="tabpanel">
+                            <div class="impact-section">
+                                <div class="impact-title">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Детали влияния
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="editCrqImpactDetails">
+                                        Влияние на сервис <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control"
+                                            id="editCrqImpactDetails"
+                                            name="edit_crq_impact_details"
+                                            rows="3"
+                                            placeholder="Опишите влияние на сервис и пользователей"
+                                            required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="editCrqCause">
+                                        Причина внесения изменений <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control"
+                                            id="editCrqCause"
+                                            name="edit_crq_cause"
+                                            rows="3"
+                                            placeholder="Укажите причину внесения изменений"
+                                            required></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="editCrqStartDate">
+                                        Дата начала влияния <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="datetime-local"
+                                        class="form-control"
+                                        id="editCrqStartDate"
+                                        name="edit_crq_start_date"
+                                        required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="editCrqEndDate">
+                                        Дата завершения влияния <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="datetime-local"
+                                        class="form-control"
+                                        id="editCrqEndDate"
+                                        name="edit_crq_end_date"
+                                        required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="editCrqWorkType">
+                                        Тип работ <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-control"
+                                            id="editCrqWorkType"
+                                            name="edit_crq_work_type"
+                                            required>
+                                        <option value="">Выберите тип работ</option>
+                                        <option value="Плановые работы">Плановые работы</option>
+                                        <option value="Планово-профилактические работы">Планово-профилактические работы</option>
+                                        <option value="Аварийно-восстановительные работы">Аварийно-восстановительные работы</option>
+                                        <option value="Ремонтно-восстановительные работы">Ремонтно-восстановительные работы</option>
+                                        <option value="Срочные работы">Срочные работы</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="editCrqDropdownMenuButton">
+                                        Тип рассылки <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="dropdown">
+                                        <button class="btn btn-secondary dropdown-toggle"
+                                                type="button"
+                                                id="editCrqDropdownMenuButton"
+                                                aria-expanded="false">
+                                            Выберите тип рассылки
+                                        </button>
+                                        <div class="dropdown-menu" id="editCrqSubscriptionsDropdown">
+                                            <!-- Список подписок загружается динамически -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 3: Communication -->
+                        <div id="editCrqCommunicationContent" class="tab-content" role="tabpanel">
+                            <div class="comments-section">
+                                <div class="section-title">
+                                    <i class="fas fa-comment"></i> Комментарий
+                                </div>
+                                <div class="form-group">
+                                    <textarea class="form-textarea"
+                                            id="editCrqComment"
+                                            name="edit_crq_comment"
+                                            rows="4"
+                                            placeholder="Добавьте комментарий к плановым работам при необходимости"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="attachments-section">
+                                <div class="section-title">
+                                    <i class="fas fa-paperclip"></i> Вложения
+                                </div>
+
+                                <div class="form-group">
+                                    <input type="file"
+                                        id="editCrqFileInput"
+                                        name="edit_crq_file_input"
+                                        style="display: none;"
+                                        multiple
+                                        accept=".pdf,.doc,.docx,.xls,.xlsx,.txt">
+
+                                    <button type="button"
+                                            id="addEditCrqFilesButton"
+                                            class="btn btn-outline-primary">
+                                        <i class="fas fa-upload"></i> Добавить файлы
+                                    </button>
+
+                                    <small class="form-text text-muted">
+                                        Поддерживаемые форматы: PDF, DOC, DOCX, XLS, XLSX, TXT. Максимальный размер: 10MB
+                                    </small>
+                                </div>
+
+                                <ul id="editCrqFileList" class="file-list">
+                                    <!-- Список загруженных файлов -->
+                                </ul>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="updateCrq">
+                        <i class="fas fa-save"></i> Сохранить
+                    </button>
+                    <button type="button" class="btn btn-info" id="previewUserEmail">
+                        <i class="fas fa-save"></i> Предпросмотр письма
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Модальное окно предпросмотра нотификации пользователям компании-->
+    <div class="modal fade" id="userEmailNotifPreviewModal" tabindex="-1" role="dialog" aria-labelledby="emailPreviewLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewUserEmailModalLabel">Предпросмотр письма</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="userEmailNotifPreviewBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="sendEmailToUsers">Отправить письмо</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Модальное окно отправки нотификации партнерам -->
+    <div class="modal fade" id="partnersModal" tabindex="-1" role="dialog" aria-labelledby="partnersModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="partnersModalLabel">Форма рассылки для партнерам</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="partnerForm">
+                        <div class="form-row">
+                            <div class="form-group col-md-2">
+                                <label for="partnerGroupname">Выберите Группу</label>
+                                <select class="form-control" id="partnerModalGroupname" name="partner_groupname">
+                                    <!-- Populating data in here -->
+                                </select>
+                                <label for="partnerModalStartDate" class="mt-3">Дата начала работ:</label>
+                                <input type="datetime-local" class="form-control" id="partnerModalStartDate" name="partner_modal_start_date">
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label for="partnerModalServiceType">Выберите Сервис</label>
+                                <select class="form-control" id="partnerModalServiceType" name="partner_modal_service_type">
+                                    <option value="">Выберите сервис</option>
+                                    <option value="MFS">MFS</option>
+                                    <option value="Simply">Simply</option>
+                                    <option value="ЕСПП">ЕСПП</option>
+                                    <option value="Google DCB">Google DCB</option>
+                                </select>
+                                <label for="partnerModalEndDate" class="mt-3">Дата окончания работ:</label>
+                                <input type="datetime-local" class="form-control" id="partnerModalEndDate" name="partner_modal_end_date">
+                            </div>
+                            <div class="form-group col-md-8">
+                                <label for="partnerModalTextletter">Текст рассылки</label>
+                                <textarea class="form-control" id="partnerModalTextletter" name="partner_modal_text_letter" rows="5" placeholder="Введите текст рассылки"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-info" id="previewPartnersEmail">Предпросмотр письма</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Модальное окно предпросмотра нотификации партнерам -->
+    <div class="modal fade" id="partnersNotifPreviewModal" tabindex="-1" role="dialog" aria-labelledby="partnersNotifPreviewLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewModalLabel">Предпросмотр письма</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="partnersNotifPreviewBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="sendEmailToPartners">Отправить письмо</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+    <!-- Передача информации о пользователе в JS -->
+    <script>
+        window.currentUser = {
+            id: "{{ current_user.id }}",
+            username: "{{ current_user.user_login }}",
+            email: "{{ current_user.user_email if current_user.user_email else '' }}"
+        };
+    </script>
+
+    <!-- Функции обработки темлейта -->
+    <script type="module" src="{{ url_for('static', filename='js/vendor/socket.io.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/crq_sbs/main.js') }}"></script>
+{% endblock %}

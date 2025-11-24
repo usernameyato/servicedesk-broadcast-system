@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% set showform = false %}
+{% set showfooter = false %}
+
+{% block title %}
+    IncAnnouncer
+{% endblock %}
+
+{% block head_styles %}
+{{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/inc_sbs.css') }}">
+{% endblock %}
+
+{% block content %}
+    <!-- Оверлей загрузки -->
+    <div id="loadingOverlay">
+        <div class="spinner-border text-warning" role="status">
+            <span class="sr-only">Загрузка...</span>
+        </div>
+    </div>
+
+    <!-- Информация об инциденте -->
+    <div class="container">
+        <div class="header-title">Информация об инциденте</div>
+
+        <!-- Контейнер статусов событий -->
+        <div id="searchAlerts"></div>
+
+        <form id="incidentSearchForm">
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="incidentNumber">Инцидент №:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="incidentNumber" name="inc_number" placeholder="Введите номер инцидента">
+                        <div class="input-group-append">
+                            <button class="btn btn-custom" type="submit" id="searchBtn">
+                                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                <span class="btn-text">Поиск</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="incidentStatusFilter">Статус рассылки:</label>
+                    <select class="form-control" id="incidentStatusFilter" name="incident_status">
+                        <option value="">Выберите статус</option>
+                        <option value="Зарегистрирован">Зарегистрирован</option>
+                        <option value="Устранено влияние">Устранено влияние</option>
+                        <option value="Зарегистрирован/устранено влияние">Зарегистрирован/устранено влияние</option>
+                        <option value="Решен">Решен</option>
+                        <option value="Дополнение">Дополнение</option>
+                        <option value="Дополнение/повышен приоритет">Дополнение/повышен приоритет</option>
+                        <option value="Дополнение/понижен приоритет">Дополнение/понижен приоритет</option>
+                        <option value="Возобновлено влияние">Возобновлено влияние</option>
+                        <option value="Возобновлено/устранено влияние">Возобновлено/устранено влияние</option>
+                        <option value="Зарегистрирован/повышен приоритет">Зарегистрирован/повышен приоритет</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Контейнер полей инцидента -->
+            <div id="incidentDetailsContainer">
+                <div class="form-row">
+                    <div class="form-group field col-md-4" id="priorityField">
+                        <label for="priority">Приоритет:</label>
+                        <input type="text" class="form-control editable-field" id="priority" readonly>
+                    </div>
+                    <div class="form-group field col-md-4" id="priorityinField">
+                        <label for="priorityin">Приоритет до повышения/понижения:</label>
+                        <select class="form-control editable-field" id="priorityin">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </div>
+                    <div class="form-group field col-md-4" id="incidentStatusField">
+                        <label for="incidentStatus">Статус инцидента:</label>
+                        <input type="text" class="form-control editable-field" id="incidentStatus" readonly>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group field col-md-4" id="incRequestCreatedField">
+                        <label for="incRequestCreated">Дата и время регистрации:</label>
+                        <input type="datetime-local" class="form-control editable-field" id="incRequestCreated" readonly>
+                    </div>
+                    <div class="form-group field col-md-4" id="incSolutionTimeField">
+                        <label for="incSolutionTime">Дата и время решения:</label>
+                        <input type="datetime-local" class="form-control editable-field" id="incSolutionTime" readonly>
+                    </div>
+                    <div class="form-group field col-md-6" id="incIncreaseTimeField">
+                        <label for="incIncreaseTime">Дата и время повышения приоритета:</label>
+                        <input type="datetime-local" class="form-control" id="incIncreaseTime">
+                    </div>
+                    <div class="form-group field col-md-6" id="incResumedTimeField">
+                        <label for="incResumedTime">Дата и время возобновления влияния:</label>
+                        <input type="datetime-local" class="form-control" id="incResumedTime">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group field col-md-5" id="incImpactStartDateField">
+                        <label for="incImpactStartDate">Дата и время начала влияния:</label>
+                        <input type="datetime-local" class="form-control editable-field" id="incImpactStartDate" readonly>
+                    </div>
+                    <div class="form-group field col-md-4" id="incEndDateField">
+                        <label for="incEndDate">Дата и время устранения влияния:</label>
+                        <input type="datetime-local" class="form-control editable-field" id="incEndDate" readonly>
+                    </div>
+                </div>
+                <div class="form-group field" id="incidentDetailsField">
+                    <label for="incidentDetails">Детали инцидента:</label>
+                    <textarea class="inctext textarea-custom" id="incidentDetails" readonly></textarea>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="editRequestCreated" class="checkbox-label">
+                        <input type="checkbox" id="editRequestCreated" class="custom-checkbox"> Разрешить редактирование
+                    </label>
+                </div>
+                <div class="form-row" id="textFields">
+                    <div class="form-group col-md-6" id="Influenceld">
+                        <label for="Influence">Влияние:</label>
+                        <textarea class="inctext" id="Influence"></textarea>
+                    </div>
+                    <div class="form-group col-md-6" id="сauseld">
+                        <label for="сause">Причина:</label>
+                        <textarea class="inctext" id="сause"></textarea>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Форма формирования письма и СМС -->
+    <div class="container">
+        <!-- Отправка письма -->
+        <div class="header-title">Отправка Email</div>
+        <div class="card-custom-n">
+            <form id="emailForm">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="dropdownMenuButton">Тип рассылки:</label>
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown">
+                                Выберите тип рассылки
+                            </button>
+                            <div class="dropdown-menu" id="subscriptionsDropdown">
+                                <!-- Загрузка списка подписок -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="emailSubject">Тема письма:</label>
+                        <input type="text" class="form-control" id="emailSubject" placeholder="Тема письма">
+                    </div>
+                </div>
+                <div class="form-group text-right">
+                    <button type="button" class="btn btn-custom" id="preview-email-button" >
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        <span class="btn-text">Предпросмотр письма</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Отправка СМС -->
+        <div class="header-title">SMS</div>
+        <div class="card-custom-n">
+            <form id="smsForm">
+                <div class="form-group" id="generatedMessageField">
+                    <label for="generatedMessage">Текст сообщения:</label>
+                    <textarea class="inctext" id="generatedMessage"></textarea>
+                </div>
+                <div class="form-group text-right">
+                    <button type="button" class="btn btn-custom" id="generateMessageButton">
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        <span class="btn-text">Сгенерировать текст сообщения</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="form-group text-right">
+            <button type="button" class="btn btn-custom" id="send-notification-btn" >
+                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                <span class="btn-text">Отправить сообщение</span>
+            </button>
+            <!-- Кнопка запроса доп информации -->
+            <!-- ОТКЛЮЧЕНА -->
+            <!-- <button type="button" class="btn btn-custom">Запросить доп.Информацию</button> -->
+            <button type="button" class="btn btn-custom" id="startIncSupportProcess">
+                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                <span class="btn-text">Создать чат в Teams</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Модальное окно предпросмотра письма -->
+    <div class="modal fade" id="previewModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Предпросмотр письма</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="email-preview-content"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" id="sendEmailButton">
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        <span class="btn-text">Отправить письмо</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+    <script src="{{ url_for('static', filename='js/inc_sbs.js') }}"></script>
+{% endblock %}

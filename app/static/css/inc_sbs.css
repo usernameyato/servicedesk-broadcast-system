@@ -1,0 +1,551 @@
+/* Refactored CSS for inc_sbs.html - API-driven approach */
+
+/* Base styles with CSS variables for easy theming */
+:root {
+    --primary-color: #ffd337;
+    --primary-dark: #F9D342;
+    --secondary-color: #555555;
+    --hover-color: #f0f0f0;
+    --text-dark: #333333;
+    --text-medium: #555555;
+    --background-light: #ffffff;
+    --background-alt: #f8f8f8;
+    --border-color: #eeeeee;
+    --standard-shadow: 0 0 10px rgba(0,0,0,0.1);
+    --hover-shadow: 0 0 10px rgba(0,0,0,0.3);
+    --info-color: #17a2b8;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+}
+
+/* Container and layout */
+.container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 1200px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Header styling */
+.header-title {
+    color: var(--text-dark);
+    font-weight: 600;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.header-title:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background-color: var(--primary-color);
+}
+
+/* Card components */
+.card-custom,
+.card-custom-n {
+    background-color: var(--background-light);
+    border-radius: 8px;
+    box-shadow: var(--standard-shadow);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    transition: box-shadow 0.3s ease;
+}
+
+.card-custom:hover,
+.card-custom-n:hover {
+    box-shadow: var(--hover-shadow);
+}
+
+/* Form controls */
+.form-control {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    color: var(--text-dark);
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 211, 55, 0.25);
+    outline: none;
+}
+
+/* Input groups */
+.input-group {
+    display: flex;
+}
+
+.input-group-append {
+    margin-left: -1px;
+}
+
+/* Button styling */
+.btn {
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover {
+    box-shadow: var(--hover-shadow);
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: scale(0.98) translateY(0);
+}
+
+.btn-custom {
+    background-color: var(--primary-color);
+    color: var(--text-dark);
+}
+
+.btn-custom:hover {
+    background-color: var(--primary-dark);
+    color: var(--text-dark);
+}
+
+.btn-info {
+    background-color: var(--info-color);
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    color: white;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #545b62;
+    color: white;
+}
+
+/* Button loading state */
+.btn.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Form labels */
+label {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Form groups */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+/* Dynamic field styling */
+.field {
+    background-color: var(--background-alt);
+    border-radius: 6px;
+    padding: 0.75rem;
+    transition: all 0.2s ease;
+    display: none; /* Hidden by default, shown via JavaScript */
+}
+
+.field.show {
+    display: block;
+}
+
+.field:hover {
+    background-color: rgba(249, 211, 66, 0.05);
+}
+
+/* Editable fields */
+.editable-field {
+    background-color: var(--background-light);
+    transition: all 0.2s ease;
+}
+
+.editable-field[readonly] {
+    background-color: var(--background-alt);
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* Textarea styling */
+.textarea-custom,
+.inctext {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.textarea-custom:focus,
+.inctext:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 211, 55, 0.25);
+    outline: none;
+}
+
+/* Checkbox styling */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.custom-checkbox,
+.form-check-input {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--primary-color);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    margin-right: 10px;
+    position: relative;
+    background-color: var(--background-light);
+    transition: all 0.2s ease;
+}
+
+.custom-checkbox:checked,
+.form-check-input:checked {
+    background-color: var(--primary-color);
+}
+
+.custom-checkbox:checked:after,
+.form-check-input:checked:after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border: solid var(--text-dark);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* Select dropdown styling */
+select.form-control {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23333' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 8px 10px;
+    padding-right: 2rem;
+}
+
+/* DateTime input styling */
+input[type="datetime-local"] {
+    padding: 0.5rem 0.75rem;
+}
+
+/* Custom dropdown */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    text-align: left;
+    background-color: var(--background-light);
+    color: var(--text-dark);
+    border: 1px solid var(--border-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dropdown-toggle::after {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.dropdown-menu {
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 0.5rem 0;
+    border: none;
+    border-radius: 6px;
+    box-shadow: var(--standard-shadow);
+    z-index: 1000;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(249, 211, 66, 0.1);
+}
+
+.dropdown-item .form-check-input {
+    margin-right: 10px;
+}
+
+.form-check-label {
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 0;
+}
+
+/* Utility classes */
+.text-right {
+    text-align: right;
+}
+
+.btn-secondary-et {
+    background-color: var(--background-light);
+    color: var(--text-dark);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary-et:hover {
+    background-color: var(--hover-color);
+    color: var(--text-dark);
+}
+
+/* Loading overlay */
+#loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* Spinner styling */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Alert styling */
+.alert {
+    margin-top: 1rem;
+    border-radius: 4px;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+}
+
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.alert-warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+}
+
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.alert-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+
+.alert-dismissible .close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0.75rem 1.25rem;
+    color: inherit;
+    background-color: transparent;
+    border: 0;
+    opacity: 0.5;
+}
+
+.alert-dismissible .close:hover {
+    opacity: 0.75;
+}
+
+/* Tooltip styling */
+[data-tooltip] {
+    position: relative;
+    cursor: pointer;
+}
+
+[data-tooltip]:before {
+    content: attr(data-tooltip);
+    position: absolute;
+    opacity: 0;
+    padding: 8px 12px;
+    background-color: rgba(51, 51, 51, 0.9);
+    color: white;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: normal;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+[data-tooltip]:after {
+    content: '';
+    position: absolute;
+    opacity: 0;
+    border: 6px solid transparent;
+    border-top-color: rgba(51, 51, 51, 0.9);
+    pointer-events: none;
+    transition: all 0.2s ease;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    z-index: 1000;
+}
+
+[data-tooltip]:hover:before,
+[data-tooltip]:hover:after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Tooltip position variants */
+[data-tooltip].tooltip-left:before,
+[data-tooltip].tooltip-left:after {
+    left: 0;
+    transform: translateX(0) translateY(10px);
+}
+
+[data-tooltip].tooltip-left:hover:before,
+[data-tooltip].tooltip-left:hover:after {
+    transform: translateX(0) translateY(0);
+}
+
+[data-tooltip].tooltip-right:before,
+[data-tooltip].tooltip-right:after {
+    left: auto;
+    right: 0;
+    transform: translateX(0) translateY(10px);
+}
+
+[data-tooltip].tooltip-right:hover:before,
+[data-tooltip].tooltip-right:hover:after {
+    transform: translateX(0) translateY(0);
+}
+
+/* Modal improvements */
+.modal-content {
+    border-radius: 8px;
+    border: none;
+    box-shadow: var(--hover-shadow);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-color);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .header-title {
+        font-size: 1.5rem;
+    }
+
+    .card-custom,
+    .card-custom-n {
+        padding: 1rem;
+    }
+
+    .dropdown-toggle {
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        font-size: 0.9rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    .btn,
+    .dropdown,
+    #loadingOverlay,
+    .alert {
+        display: none !important;
+    }
+
+    .container {
+        max-width: none;
+        padding: 0;
+    }
+
+    .card-custom,
+    .card-custom-n {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}

@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+{% set showform = false %}
+{% set showfooter = false %}
+
+{% block title %}
+    Управление Группами и Пользователями
+{% endblock %}
+
+{% block head_styles %}
+{{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/partners_panel.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>Настройка групп партнеров</h1>
+
+        <!-- Alert container for server-side messages -->
+        <div id="alert-container"></div>
+
+        <!-- Group selection card -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-users mr-2" aria-hidden="true"></i>
+                Выбрать Группу
+            </div>
+            <div class="card-body">
+                <div class="form-group mb-0">
+                    <label for="groupname" class="form-label font-weight-bold">
+                        Группа: <span class="text-danger">*</span>
+                    </label>
+                    <select class="form-control" id="groupname" aria-describedby="groupname-help">
+                        <option value="">Загрузка...</option>
+                    </select>
+                    <small id="groupname-help" class="form-text text-muted">
+                        Выберите группу для редактирования
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Group editing card -->
+        <div class="card" id="editGroupCard" style="display: none;">
+            <div class="card-header">
+                <i class="fas fa-edit mr-2" aria-hidden="true"></i>
+                Редактировать Группу
+            </div>
+            <div class="card-body">
+                <!-- Group statistics -->
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                Участников в группе: <strong id="partners-count">0</strong>
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-md-right">
+                            <small class="text-muted">
+                                Последнее изменение: <span id="last-modified">—</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Partners in group -->
+                <div class="form-group">
+                    <label class="form-label font-weight-bold">Участники группы</label>
+                    <div id="group-partners" class="partners-container">
+                        <!-- Partners will be populated here -->
+                    </div>
+                    <div id="empty-partners-message" class="text-center py-4" style="display: none;">
+                        <div class="text-muted">
+                            <i class="fas fa-user-plus fa-2x mb-3" aria-hidden="true"></i>
+                            <h6>Группа пуста</h6>
+                            <p>Добавьте первого участника в эту группу.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <button type="button"
+                            class="btn btn-success"
+                            data-toggle="modal"
+                            data-target="#addUserModal"
+                            title="Добавить нового пользователя">
+                        <i class="fas fa-user-plus mr-1" aria-hidden="true"></i>
+                        Добавить пользователя
+                    </button>
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-toggle="modal"
+                            data-target="#uploadFileModal"
+                            title="Загрузить файл с пользователями">
+                        <i class="fas fa-upload mr-1" aria-hidden="true"></i>
+                        Загрузить файл
+                    </button>
+                </div>
+
+                <!-- Save changes button -->
+                <div class="d-flex justify-content-end">
+                    <button type="button"
+                            class="btn btn-primary"
+                            id="saveChangesBtn"
+                            title="Сохранить все изменения">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <i class="fas fa-save mr-1" aria-hidden="true"></i>
+                        Сохранить изменения
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Groups list card -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <button id="toggleButton"
+                            class="btn btn-outline-secondary btn-sm mr-2"
+                            type="button"
+                            data-toggle="collapse"
+                            data-target="#groupList"
+                            aria-expanded="true"
+                            aria-controls="groupList"
+                            title="Свернуть/развернуть список групп">
+                        &#9660;
+                    </button>
+                    <i class="fas fa-list mr-2" aria-hidden="true"></i>
+                    <span>Список Групп</span>
+                </div>
+                <button type="button"
+                        class="btn btn-success btn-sm"
+                        data-toggle="modal"
+                        data-target="#addGroupModal"
+                        title="Создать новую группу">
+                    <i class="fas fa-plus mr-1" aria-hidden="true"></i>
+                    Создать группу
+                </button>
+            </div>
+            <div class="collapse show" id="groupList">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col" style="width: 70%;">Название группы</th>
+                                    <th scope="col" style="width: 30%;">Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="groupsTableBody">
+                                <tr>
+                                    <td colspan="2" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="fas fa-spinner fa-spin fa-2x mb-3" aria-hidden="true"></i>
+                                            <p>Загрузка групп...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">
+                        <i class="fas fa-user-plus mr-2" aria-hidden="true"></i>
+                        Добавить нового пользователя
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="add-partner-form" novalidate>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="email" class="form-label font-weight-bold">
+                                Email: <span class="text-danger">*</span>
+                            </label>
+                            <input type="email"
+                                   class="form-control"
+                                   id="email"
+                                   name="email"
+                                   placeholder="user@example.com"
+                                   required
+                                   aria-describedby="email-help">
+                            <small id="email-help" class="form-text text-muted">
+                                Введите действительный email-адрес пользователя
+                            </small>
+                            <div class="invalid-feedback">
+                                Пожалуйста, введите корректный email-адрес
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="partner-groupname" class="form-label font-weight-bold">
+                                Группа: <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-control"
+                                    id="partner-groupname"
+                                    name="groupname"
+                                    required
+                                    aria-describedby="partner-group-help">
+                                <!-- Groups will be populated here -->
+                            </select>
+                            <small id="partner-group-help" class="form-text text-muted">
+                                Выберите группу для добавления пользователя
+                            </small>
+                            <div class="invalid-feedback">
+                                Пожалуйста, выберите группу
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            <i class="fas fa-plus mr-1" aria-hidden="true"></i>
+                            Добавить
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times mr-1" aria-hidden="true"></i>
+                            Отмена
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Group Modal -->
+    <div class="modal fade" id="addGroupModal" tabindex="-1" role="dialog" aria-labelledby="addGroupModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addGroupModalLabel">
+                        <i class="fas fa-plus mr-2" aria-hidden="true"></i>
+                        Создать новую группу
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="add-group-form" novalidate>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="new-groupname" class="form-label font-weight-bold">
+                                Название группы: <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="new-groupname"
+                                   name="groupname"
+                                   placeholder="Введите название группы"
+                                   maxlength="100"
+                                   required
+                                   aria-describedby="new-group-help new-group-counter">
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <small id="new-group-help" class="form-text text-muted">
+                                    Используйте описательное название для группы
+                                </small>
+                                <small id="new-group-counter" class="text-muted">
+                                    <span id="group-char-count">0</span>/100
+                                </small>
+                            </div>
+                            <div class="invalid-feedback">
+                                Пожалуйста, введите название группы
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            <i class="fas fa-plus mr-1" aria-hidden="true"></i>
+                            Создать
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times mr-1" aria-hidden="true"></i>
+                            Отмена
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload File Modal -->
+    <div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="uploadFileModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadFileModalLabel">
+                        <i class="fas fa-upload mr-2" aria-hidden="true"></i>
+                        Загрузить файл пользователей
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="upload-file-form" novalidate>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="file-groupname" class="form-label font-weight-bold">
+                                Выберите группу: <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-control"
+                                    id="file-groupname"
+                                    name="groupname"
+                                    required
+                                    aria-describedby="file-group-help">
+                                <!-- Groups will be populated here -->
+                            </select>
+                            <small id="file-group-help" class="form-text text-muted">
+                                Пользователи будут добавлены в выбранную группу
+                            </small>
+                            <div class="invalid-feedback">
+                                Пожалуйста, выберите группу
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="file" class="form-label font-weight-bold">
+                                Файл пользователей: <span class="text-danger">*</span>
+                            </label>
+                            <input type="file"
+                                   class="form-control-file"
+                                   id="file"
+                                   name="file"
+                                   required
+                                   accept=".txt"
+                                   aria-describedby="file-help">
+                            <small id="file-help" class="form-text text-muted">
+                                Файл должен быть в формате .txt и содержать по одному email-адресу на строку. Максимальный размер: 5MB
+                            </small>
+                            <div class="invalid-feedback">
+                                Пожалуйста, выберите файл в формате .txt
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            <i class="fas fa-upload mr-1" aria-hidden="true"></i>
+                            Загрузить
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times mr-1" aria-hidden="true"></i>
+                            Отмена
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+    <script src="{{ url_for('static', filename='js/partners_panel.js') }}"></script>
+{% endblock %}

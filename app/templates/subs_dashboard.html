@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% set showform = true %}
+{% set showfooter = true %}
+
+{% block title %}
+    Подписки на рассылки
+{% endblock %}
+
+{% block head_styles %}
+{{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/subs_dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="page-header">
+            <h1>
+                <i class="fas fa-envelope mr-3" aria-hidden="true"></i>
+                Подписки на рассылки от Servicedesk
+            </h1>
+            <p class="page-subtitle">Настройте уведомления под ваши потребности</p>
+        </div>
+
+        <!-- Контейнер статуса обработки событий -->
+        <div id="alert-container"></div>
+
+        <!-- НАСТРОЙКА ОТЛОЖЕННЫХ СООБЩЕНИЙ -->
+        <!-- ОТКЛЮЧЕНА -->
+        <!-- <div class="settings-card mb-4">
+            <div class="settings-header">
+                <h3>
+                    <i class="fas fa-cog mr-2" aria-hidden="true"></i>
+                    Общие настройки
+                </h3>
+            </div>
+            <div class="settings-body">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>СМС оповещения вне рабочего времени</h4>
+                        <p>Получать SMS уведомления в нерабочие часы и выходные дни</p>
+                    </div>
+                    <div class="setting-control">
+                        <label class="switch">
+                            <input type="checkbox" id="off-hours" aria-describedby="off-hours-help">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+
+        <!-- Окно поиска подписок -->
+        <div class="controls-section mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon" aria-hidden="true"></i>
+                        <input type="text"
+                               id="subscription-search"
+                               class="form-control search-input"
+                               placeholder="Поиск подписок..."
+                               aria-label="Поиск подписок">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="filter-controls">
+                        <select id="subscription-filter" class="form-control" aria-label="Фильтр подписок">
+                            <option value="all">Все подписки</option>
+                            <option value="active">Активные</option>
+                            <option value="inactive">Неактивные</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика подписок -->
+        <div class="stats-section mb-4">
+            <div class="row">
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-list" aria-hidden="true"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4 id="total-subscriptions">0</h4>
+                            <p>Всего подписок</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon active">
+                            <i class="fas fa-bell" aria-hidden="true"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4 id="active-incidents">0</h4>
+                            <p>Активные инциденты</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon maintenance">
+                            <i class="fas fa-tools" aria-hidden="true"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4 id="active-maintenance">0</h4>
+                            <p>Плановые работы</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon priority">
+                            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4 id="high-priority">0</h4>
+                            <p>Высокий приоритет</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Плитка подписок -->
+        <div class="subscriptions-section">
+            <div class="section-header">
+                <h3>
+                    <i class="fas fa-th-large mr-2" aria-hidden="true"></i>
+                    Ваши подписки
+                </h3>
+                <div class="view-controls">
+                    <button type="button" class="btn-view active" data-view="grid" aria-label="Вид сетки">
+                        <i class="fas fa-th" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="btn-view" data-view="list" aria-label="Вид списка">
+                        <i class="fas fa-list" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="subscriptions-container" class="subscriptions-grid">
+                <!-- Карты подписок загружаются тут... -->
+            </div>
+
+            <!-- При отсутствии записей в базе -->
+            <div id="empty-state" class="empty-state hidden">
+                <div class="empty-icon">
+                    <i class="fas fa-inbox fa-3x" aria-hidden="true"></i>
+                </div>
+                <h4>Подписки не найдены</h4>
+                <p>Попробуйте изменить критерии поиска или фильтрации</p>
+            </div>
+
+            <!-- Загрузка состояния -->
+            <div id="loading-state" class="loading-state">
+                <div class="loading-spinner">
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only">Загрузка...</span>
+                    </div>
+                </div>
+                <p>Загрузка подписок...</p>
+            </div>
+        </div>
+
+        <!-- Кнопки событий -->
+        <div class="actions-section">
+            <button type="button"
+                    class="btn btn-primary btn-lg"
+                    id="save-btn"
+                    aria-label="Сохранить изменения подписок">
+                <i class="fas fa-save mr-2" aria-hidden="true"></i>
+                Сохранить изменения
+            </button>
+            <button type="button"
+                    class="btn btn-secondary btn-lg"
+                    id="reset-btn"
+                    aria-label="Сбросить изменения">
+                <i class="fas fa-undo mr-2" aria-hidden="true"></i>
+                Сбросить
+            </button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+    <script src="{{ url_for('static', filename='js/subs_dashboard.js') }}"></script>
+{% endblock %}

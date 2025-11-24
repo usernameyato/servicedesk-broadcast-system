@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Servicedesk Broadcast System - Manage your subscriptions and feedback">
+        <title>{% block title %}SBS app{% endblock %}</title>
+
+        {% block head_styles %}
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/vendor/bootstrap.min.css') }}">
+
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+
+            {% if showform %}
+                <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback_form.css') }}">
+
+            {% endif %}
+        {% endblock %}
+
+    </head>
+
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="{{ url_for('main.subs_dashboard') }}" aria-label="Go to Dashboard">
+                <img src="{{ url_for('static', filename='img/logosd.png') }}"
+                    width="70"
+                    height="38"
+                    class="d-inline-block align-top"
+                    alt="SBS Logo"
+                    loading="lazy">
+                <span>Servicedesk Broadcast System</span>
+            </a>
+
+            {% if current_user.is_authenticated %}
+                <button class="navbar-toggler d-lg-none"
+                        type="button"
+                        data-toggle="collapse"
+                        data-target="#navbarNav"
+                        aria-controls="navbarNav"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <div class="menu-container">
+                        <button class="menu-toggle"
+                                id="menuToggle"
+                                aria-expanded="false"
+                                aria-controls="expandableMenu"
+                                aria-label="Toggle navigation menu">
+                            Меню
+                        </button>
+
+                        <div class="expandable-menu" id="expandableMenu" role="menu">
+                            <div class="menu-header">Навигация</div>
+                            <div class="menu-links">
+                                {% if current_user.role == 'admin' %}
+                                    <a href="{{ url_for('crq.crq_sbs') }}"
+                                    class="menu-link admin-only"
+                                    role="menuitem"
+                                    aria-label="Access CRQ Broadcast Panel (Admin Only)">
+                                        <i class="fas fa-users mr-2" aria-hidden="true"></i>
+                                        Плановые работы
+                                    </a>
+                                    <a href="{{ url_for('inc.inc_sbs') }}"
+                                    class="menu-link admin-only"
+                                    role="menuitem"
+                                    aria-label="Access Incident Broadcast Panel (Admin Only)">
+                                        <i class="fas fa-users mr-2" aria-hidden="true"></i>
+                                        Рассылка инцидентов
+                                    </a>
+                                    <a href="{{ url_for('admin.partners_panel') }}"
+                                    class="menu-link admin-only"
+                                    role="menuitem"
+                                    aria-label="Access Partners Panel (Admin Only)">
+                                        <i class="fas fa-users mr-2" aria-hidden="true"></i>
+                                        Панель партнеров
+                                    </a>
+                                    <a href="{{ url_for('admin.users_feedbacks') }}"
+                                    class="menu-link admin-only"
+                                    role="menuitem"
+                                    aria-label="View User Feedbacks (Admin Only)">
+                                        <i class="fas fa-comments mr-2" aria-hidden="true"></i>
+                                        Отзывы пользователей
+                                    </a>
+                                {% endif %}
+
+                                <a href="{{ url_for('main.subs_dashboard') }}"
+                                class="menu-link"
+                                role="menuitem"
+                                aria-label="View Subscription List">
+                                    <i class="fas fa-list mr-2" aria-hidden="true"></i>
+                                    Список подписок
+                                </a>
+
+                                {% if current_user.role == 'user' or current_user.role == 'admin' %}
+                                    <a href="{{ url_for('main.feedbacks') }}"
+                                    class="menu-link"
+                                    role="menuitem"
+                                    aria-label="View Your Feedbacks">
+                                        <i class="fas fa-comment-dots mr-2" aria-hidden="true"></i>
+                                        Ваши отзывы
+                                    </a>
+                                {% endif %}
+
+                                <a href="{{ url_for('auth.logout') }}"
+                                class="menu-link logout"
+                                role="menuitem"
+                                aria-label="Logout">
+                                    <i class="fas fa-sign-out-alt mr-2" aria-hidden="true"></i>
+                                    Выйти
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </nav>
+
+        <main role="main">
+            {% block content %}{% endblock %}
+        </main>
+
+        {% if showform %}
+            <button class="feedback-button"
+                    id="feedbackBtn"
+                    title="Отправить отзыв"
+                    aria-label="Open feedback form">
+                💬
+            </button>
+
+            <div class="feedback-form-container"
+                id="feedbackForm"
+                role="dialog"
+                aria-labelledby="feedbackFormTitle"
+                aria-hidden="true">
+                <div class="feedback-form-header">
+                    <h3 id="feedbackFormTitle">Отправить отзыв</h3>
+                </div>
+                <div class="feedback-form-body">
+                    <div class="success-message" id="successMessage" role="alert">
+                        <i class="fas fa-check-circle mr-2" aria-hidden="true"></i>
+                        Спасибо за ваш отзыв! Мы рассмотрим его в ближайшее время.
+                    </div>
+
+                    <form id="feedbackFormElement" novalidate>
+                        <div class="form-group">
+                            <label for="feedbackMessage">
+                                Сообщение: <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control"
+                                    id="feedbackMessage"
+                                    name="message"
+                                    rows="4"
+                                    placeholder="Опишите ваш отзыв..."
+                                    required
+                                    maxlength="1000"
+                                    aria-describedby="feedbackHelp"></textarea>
+                            <small id="feedbackHelp" class="form-text text-muted">
+                                Максимум 1000 символов
+                            </small>
+                            <div class="invalid-feedback">
+                                Пожалуйста, введите ваш отзыв
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-primary"
+                                id="submitBtn">
+                            <i class="fas fa-paper-plane mr-1" aria-hidden="true"></i>
+                            Отправить отзыв
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+
+        <script src="{{ url_for('static', filename='js/vendor/jquery-3.7.1.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/vendor/popper.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/vendor/bootstrap.min.js') }}"></script>
+
+        <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+
+        {% if showform %}
+            <script src="{{ url_for('static', filename='js/feedback_form.js') }}"></script>
+        {% endif %}
+
+        {% block scripts %}{% endblock %}
+
+    </body>
+</html>

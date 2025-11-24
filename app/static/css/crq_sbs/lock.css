@@ -1,0 +1,290 @@
+/* lock_styles.css - Styles for lock management features */
+
+/* Lock Status Bar */
+.lock-status-bar {
+    position: fixed;
+    top: 60px; /* Adjust based on your navbar height */
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 8px 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    min-width: 200px;
+}
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-indicator.connected {
+    background-color: #28a745;
+}
+
+.status-indicator.disconnected {
+    background-color: #dc3545;
+    animation: none;
+}
+
+.status-indicator.connecting {
+    background-color: #ffc107;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* CRQ Button Lock States */
+.work-button {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.work-button.locked {
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+.work-button.acquiring-lock {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+    position: relative;
+}
+
+.work-button.acquiring-lock::after {
+    content: "⏳";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    font-size: 10px;
+    background: #ffc107;
+    color: #212529;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Lock indicator icons */
+.work-button.locked-by-me {
+    background-color: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+    position: relative;
+}
+
+.work-button.locked-by-me::after {
+    content: "🔒";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    font-size: 10px;
+    background: #28a745;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.work-button.locked-by-other {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+    cursor: not-allowed;
+    position: relative;
+}
+
+.work-button.locked-by-other::after {
+    content: "🚫";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    font-size: 10px;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* Modal Lock Indicator */
+.modal-header .lock-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #28a745;
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: auto;
+    margin-right: 16px;
+    padding: 4px 12px;
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: 16px;
+    border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.lock-indicator .lock-icon {
+    font-size: 16px;
+}
+
+/* Enhanced lock indicator */
+.lock-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #28a745;
+    font-size: 14px;
+    margin-left: auto;
+    padding: 4px 12px;
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: 20px;
+    border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.lock-icon {
+    animation: lock-glow 2s ease-in-out infinite;
+}
+
+@keyframes lock-glow {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+/* Status Legend Enhancements */
+.status-legend {
+    margin-bottom: 20px;
+}
+
+.legend-divider {
+    width: 100%;
+    height: 1px;
+    background: #dee2e6;
+    margin: 8px 0;
+}
+
+.locked-by-self-demo,
+.locked-by-other-demo {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.locked-by-self-demo {
+    background: rgba(40, 167, 69, 0.1);
+    border: 1px solid rgba(40, 167, 69, 0.3);
+    color: #28a745;
+}
+
+.locked-by-other-demo {
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    color: #dc3545;
+}
+
+
+/* Lock Animation Effects */
+.work-button.locked {
+    animation: lockPulse 3s infinite;
+}
+
+@keyframes lockPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .lock-status-bar {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        font-size: 13px;
+        padding: 6px 12px;
+    }
+    
+    .admin-lock-panel {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        bottom: 10px;
+    }
+    
+    .work-button.locked-by-self::before,
+    .work-button.locked-by-other::before {
+        width: 14px;
+        height: 14px;
+        font-size: 8px;
+        top: -5px;
+        right: -5px;
+    }
+    
+    .toast-container {
+        right: 10px;
+        left: 10px;
+    }
+    
+    .lock-toast {
+        max-width: none;
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .work-button.locked-by-self {
+        border-width: 3px;
+    }
+    
+    .work-button.locked-by-other {
+        border-width: 3px;
+    }
+    
+    .status-indicator {
+        border: 2px solid currentColor;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .work-button,
+    .status-indicator,
+    .lock-toast,
+    .admin-lock-panel {
+        animation: none;
+        transition: none;
+    }
+    
+    .work-button.acquiring-lock::after {
+        animation: none;
+    }
+}

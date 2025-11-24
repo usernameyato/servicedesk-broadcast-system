@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Плановые технические работы — ServiceDesk</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;color:#2c2c2c;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <tr>
+      <td align="center" style="padding:0;margin:0;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:800px;border-collapse:collapse;background:#34495e;">
+          <tr>
+            <td colspan="2" align="center" style="padding:24px 24px 24px 24px;">
+              <div style="font-size:22px;font-weight:700;color:#1f2530;line-height:1.35;color:#fff">
+                {{ content.crq_work_type }}
+              </div>
+            </td>
+            <td align="right" style="padding:12px 20px;">
+              <span style="display:inline-block;background:#FFEB3B;color:#1b1f27;font-weight:700;font-size:14px;line-height:1;padding:10px 14px;border-radius:18px;">
+                {{ content.crq_number }}
+              </span>
+            </td>
+          </tr>
+        </table>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:800px;border-collapse:collapse;background:#ffffff;border-radius:8px;box-shadow:0 1px 10px rgba(0,0,0,0.06);overflow:hidden;">
+          <tr>
+            <td style="padding:8px 24px 16px 24px;">
+              <div style="background:#fbfbfb;border:1px solid #eee;border-radius:8px;padding:16px;color:#434343;">
+                <div style="font-size:14px;line-height:1.5; text-align:center">Информируем о предстоящих работах. В период проведения возможны временные ограничения в работе сервиса.</div>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" >
+                <tr>
+                  <td style="width:40%;padding:10px;border-bottom:1px solid #eee;color:#666777;"><strong>Сервис/Приложение</strong></td>
+                  <td style="width:3px;background:#ffd036;"></td>
+                  <td style="padding:10px;border-bottom:1px solid #eee;">{{ content.crq_direction }}</td>
+                </tr>
+                <tr style="background:#eeeeee;">
+                  <td style="padding:10px;border-bottom:1px solid #eee;color:#666;background:#eeeeee;"><strong>Влияние на абонентов</strong></td>
+                  <td style="width:3px;background:#ffd036;"></td>
+                  <td style="padding:10px;border-bottom:1px solid #eee;background:#eeeeee;">{{ content.crq_impact }}</td>
+                </tr>
+                <tr >
+                  <td style="padding:10px;border-bottom:1px solid #eee;color:#666;"><strong>Дата и время прерывания сервиса</strong></td>
+                  <td style="width:3px;background:#ffd036;"></td>
+                  <td style="padding:10px;border-bottom:1px solid #eee;">{{ content.date_rage }}</td>
+                </tr>
+                <tr style="background:#eeeeee;">
+                  <td style="padding:10px;border-bottom:1px solid #eee;color:#666;"><strong>Причина</strong></td>
+                  <td style="width:3px;background:#ffd036;"></td>
+                  <td style="padding:10px;border-bottom:1px solid #eee;">{{ content.crq_cause }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px;border-bottom:1px solid #eee;color:#666;"><strong>Источник информации</strong></td>
+                  <td style="width:3px;background:#ffd036;"></td>
+                  <td style="padding:10px;border-bottom:1px solid #eee;">{{ content.crq_work_type }} в рамках {{ content.crq_number }}</td>
+                </tr>
+                <tr style="background:#eeeeee;">
+                  <td style="padding:10px;border-bottom:1px solid #eee;color:#666;"><strong>Влияние</strong></td>
+                  <td style="width:3px;background:#ffd036;"></td>
+                  <td style="padding:10px;border-bottom:1px solid #eee;">{{ content.crq_impact_details }}</td>
+                </tr>
+              </table>
+              </div>
+            </td>
+          </tr>
+
+
+          <!-- Подвал -->
+          <tr>
+            <td style="background:#34495e;padding:20px 24px;border-radius:0 0 8px 8px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                <tr>
+                  <td style="color:#FFEB3B;font-weight:700;text-align:center;padding:6px 0;">
+                    По вопросам обращайтесь в ServiceDesk:
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align:center;font-size:14px;color:#ffffff;">
+                    <span style="display:inline-block;margin:4px 8px;">
+                       Email: <a href="mailto:servicedesk@beeline.kz" style="color:#FFEB3B;text-decoration:none;">servicedesk@beeline.kz</a>
+                    </span>
+                    <span style="color:#ffffff;opacity:0.6;margin:0 6px;">•</span>
+                    <span style="display:inline-block;margin:4px 8px;">
+                       Телефон: <a href="#" style="color:#FFEB3B;text-decoration:none;">+7 777 222 0036 </a>
+                    </span>
+                    <span style="color:#ffffff;opacity:0.6;margin:0 6px;">•</span>
+                    <span style="display:inline-block;margin:4px 8px;">
+                       Чат-бот в Teams: <a href="https://teams.microsoft.com/l/app/0874735a-9c12-4fa0-860f-e85a390419eb?source=app-bar-share-entrypoint" style="color:#FFEB3B;text-decoration:none;">ServiceDesk_bot</a>
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top:14px;text-align:center;color:#a8b0bd;font-size:12px;">
+                    Примечание: письмо носит информационный характер, ответа не требуется.
+                    <br>© Beeline Qazaqstan · Команда ServiceDesk
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

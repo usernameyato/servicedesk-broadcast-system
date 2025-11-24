@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% set showform = true %}
+{% set showfooter = false %}
+
+{% block title %}
+    Ваши отзывы - SBS
+{% endblock %}
+
+{% block head_styles %}
+{{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback_list.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h2 class="feedback-header">
+            <i class="fas fa-comment-dots mr-3" aria-hidden="true"></i>
+            Ваши Отзывы
+        </h2>
+
+        {% if feedbacks %}
+            <!-- Feedback Statistics -->
+            <div class="feedback-stats">
+                <div class="stat-card">
+                    <div class="stat-number">{{ feedbacks|length }}</div>
+                    <div class="stat-label">Всего отзывов</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ feedbacks|selectattr('response')|list|length }}</div>
+                    <div class="stat-label">Отвечено</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ feedbacks|rejectattr('response')|list|length }}</div>
+                    <div class="stat-label">Ожидает ответа</div>
+                </div>
+            </div>
+
+            <!-- Feedback Cards -->
+            {% for feedback in feedbacks %}
+                <div class="feedback-card" role="article" aria-labelledby="feedback-{{ loop.index }}">
+                    <div class="feedback-meta">
+                        <div class="feedback-user">
+                            <span class="user-avatar"
+                                  aria-label="Avatar for {{ feedback.username|e }}"
+                                  title="{{ feedback.username|e }}">
+                                {{ feedback.username[0]|upper if feedback.username else 'U' }}
+                            </span>
+                            <div class="user-details">
+                                <h5 class="user-name" id="feedback-{{ loop.index }}">
+                                    {{ feedback.username|e if feedback.username else 'Пользователь' }}
+                                </h5>
+                                <p class="feedback-date">
+                                    {% if feedback.timestamp %}
+                                        <i class="fas fa-clock mr-1" aria-hidden="true"></i>
+                                        {{ feedback.timestamp if feedback.timestamp else 'Дата не указана' }}
+                                    {% else %}
+                                        <i class="fas fa-clock mr-1" aria-hidden="true"></i>
+                                        Дата не указана
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="feedback-status">
+                            {% if feedback.response %}
+                                <span class="status-badge answered"
+                                      role="status"
+                                      aria-label="Получен ответ на отзыв">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                    Отвечено
+                                </span>
+                            {% else %}
+                                <span class="status-badge pending"
+                                      role="status"
+                                      aria-label="Ожидает ответа">
+                                    <i class="fas fa-hourglass-half" aria-hidden="true"></i>
+                                    Ожидает ответа
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="feedback-content">
+                        <div class="feedback-message">
+                            <p>{{ feedback.message|e if feedback.message else 'Сообщение отсутствует' }}</p>
+                        </div>
+
+                        {% if feedback.response %}
+                            <div class="feedback-response" role="complementary" aria-label="Ответ службы поддержки">
+                                <div class="response-header">
+                                    <span class="support-icon" aria-hidden="true">
+                                        <i class="fas fa-headset"></i>
+                                    </span>
+                                    <h6>Ответ ServiceDesk:</h6>
+                                </div>
+                                <div class="response-content">
+                                    <p>{{ feedback.response|e }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Load More Section (if pagination is needed) -->
+            {% if feedbacks|length >= 10 %}
+                <div class="text-center mt-4">
+                    <button class="btn btn-secondary"
+                            id="loadMoreBtn"
+                            aria-label="Загрузить больше отзывов">
+                        <i class="fas fa-chevron-down mr-2" aria-hidden="true"></i>
+                        Показать больше
+                    </button>
+                </div>
+            {% endif %}
+
+        {% else %}
+            <!-- Enhanced Empty State -->
+            <div class="empty-state" role="region" aria-label="Пустое состояние - нет отзывов">
+                <div class="empty-icon" aria-hidden="true">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h3>У вас пока нет отзывов</h3>
+                <p>
+                    Поделитесь своим мнением о нашей системе! Ваши отзывы помогают нам
+                    улучшать сервис и делать его более удобным для всех пользователей.
+                </p>
+                <a href="#"
+                   class="empty-cta"
+                   id="createFeedbackBtn"
+                   aria-label="Создать первый отзыв">
+                    <i class="fas fa-plus mr-2" aria-hidden="true"></i>
+                    Оставить отзыв
+                </a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+    <script src="{{ url_for('static', filename='js/feedback_list.js') }}"></script>
+{% endblock %}
