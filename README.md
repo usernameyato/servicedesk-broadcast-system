@@ -1,4 +1,4 @@
-# ServiceDesk Notification System
+# ServiceDesk Broadcast System
 
 A web application that facilitates the process of notifying company users and partners about planned work and high-priority incidents affecting system operability.
 
@@ -172,7 +172,6 @@ SMPP_SENDER = '...'                     # String. SMS sender name
 
 ## Contact
 
-**hidden**
 **hidden**
 **hidden**
 **hidden**
